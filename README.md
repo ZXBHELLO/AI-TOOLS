@@ -4,7 +4,3 @@
 - **无需注册，无限制，完全免费**：即开即用，无任何限制。
 - **支持API Key**：可使用自己的Pollinations.AI密钥解锁高级模型。
 - **精美UI**：支持明暗模式和中/英文切换的现代界面。
-
-## 🚀 One-Click Deployment | 一键部署
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Azad-sl/FreeAI&project-name=FreeAI&repository-name=FreeAI)
