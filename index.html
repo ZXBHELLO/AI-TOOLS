@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="favicon.ico">
+    <title>FreeAI - 基于 Pollinations.AI </title>
+    <style>
+        :root {
+            --neon-pink: #ff2a6d;
+            --neon-blue: #01c8ee;
+            --neon-purple: #ae5ff8;
+            --neon-green: #05ffa1;
+            --space-blue: #0b3d91;
+            --cosmic-purple: #6633cc;
+            --dark-bg: #05060f;
+            --darker-bg: #02030a;
+            --accent-color: #ff2a6d;
+            --star-color: #ffffff;
+            --nebula-color1: rgba(174, 95, 248, 0.2);
+            --nebula-color2: rgba(1, 200, 238, 0.2);
+            --nebula-color3: rgba(255, 42, 109, 0.2);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+body {
+    background-color: var(--dark-bg);
+    color: #ffffff;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+}
+body::-webkit-scrollbar {
+    display: none;
+}
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -2;
+        }
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: var(--star-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle var(--duration) infinite ease-in-out var(--delay);
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: var(--opacity); transform: scale(1); }
+        }
+        .shooting-star {
+            position: absolute;
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,1));
+            opacity: 0;
+            transform-origin: right;
+            animation: shooting var(--duration) infinite linear var(--delay);
+        }
+        @keyframes shooting {
+            0% { opacity: 0; transform: translateX(0) }
+            5% { opacity: 1; }
+            20% { opacity: 1; }
+            30% { opacity: 0; transform: translateX(-200px) }
+            100% { opacity: 0; transform: translateX(-200px) }
+        }
+        .nebula {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            z-index: -1;
+            animation: nebula-float 30s infinite alternate ease-in-out;
+        }
+        @keyframes nebula-float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(50px, 50px) rotate(10deg); }
+        }
+        .orbit {
+            position: fixed;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: -1;
+            animation: orbit-rotate 60s linear infinite;
+        }
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            transform-origin: center;
+            animation: planet-glow 4s ease-in-out infinite alternate;
+        }
+        @keyframes orbit-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes planet-glow {
+            0% { box-shadow: 0 0 10px 2px var(--glow-color); }
+            100% { box-shadow: 0 0 20px 5px var(--glow-color); }
+        }
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            opacity: 0.15;
+            z-index: 1;
+        }
+       .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+        h1::after {
+            content: "Free AI";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: none;
+            -webkit-text-fill-color: transparent;
+            text-shadow:
+                0 0 5px var(--neon-blue),
+                0 0 10px var(--neon-pink),
+                0 0 15px var(--neon-purple),
+                0 0 20px var(--neon-green);
+            animation: flicker 4s infinite alternate;
+            opacity: 0.7;
+        }
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+                opacity: 0.9;
+                text-shadow:
+                    0 0 5px var(--neon-blue),
+                    0 0 10px var(--neon-pink),
+                    0 0 15px var(--neon-purple),
+                    0 0 20px var(--neon-green);
+            }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+                opacity: 0.4;
+                text-shadow: none;
+            }
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+        }
+        .subtitle::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .card {
+            background: rgba(5, 6, 15, 0.8);
+            border-radius: 10px;
+            padding: 2rem;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(1, 200, 238, 0.15);
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink), var(--neon-purple));
+            z-index: 1;
+        }
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(1, 200, 238, 0.1), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+        }
+        .card:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            box-shadow:
+                0 0 20px rgba(1, 200, 238, 0.3),
+                0 0 40px rgba(174, 95, 248, 0.2);
+        }
+        .card:hover::after {
+            opacity: 1;
+        }
+        .card:nth-child(1)::before {
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+        }
+        .card:nth-child(2)::before {
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+        }
+        .card:nth-child(3)::before {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-green));
+        }
+        .card-content {
+            position: relative;
+            z-index: 2;
+        }
+        .star-dust {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .card:hover .star-dust {
+            opacity: 1;
+        }
+        .dust-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: float-up 3s linear infinite;
+        }
+        @keyframes float-up {
+            0% { transform: translateY(100%) scale(0); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            position: relative;
+        }
+        .card-icon::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        .card:nth-child(1) .card-icon {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        .card:nth-child(2) .card-icon {
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+        .card:nth-child(3) .card-icon {
+            color: var(--neon-purple);
+            text-shadow: 0 0 10px var(--neon-purple);
+        }
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .card p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            text-decoration: none;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: var(--accent-color);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+        .btn:hover {
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+        .btn:hover::before {
+            width: 100%;
+        }
+        .card:nth-child(1) .btn {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+        .card:nth-child(1) .btn::before {
+            background: var(--neon-blue);
+        }
+        .card:nth-child(2) .btn {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+        }
+        .card:nth-child(2) .btn::before {
+            background: var(--neon-pink);
+        }
+        .card:nth-child(3) .btn {
+            border-color: var(--neon-purple);
+            color: var(--neon-purple);
+        }
+        .card:nth-child(3) .btn::before {
+            background: var(--neon-purple);
+        }
+        .code-lines {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: 0;
+            background-size: 20px 20px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        }
+        .circuit-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .circuit-line {
+            position: absolute;
+            background: rgba(1, 200, 238, 0.1);
+            overflow: hidden;
+        }
+        .circuit-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(1, 200, 238, 0.5), transparent);
+            animation: circuitPulse 3s infinite linear;
+        }
+        @keyframes circuitPulse {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+        .circuit-line:nth-child(1) {
+            width: 3px;
+            height: 40%;
+            top: 0;
+            left: 10%;
+        }
+        .circuit-line:nth-child(2) {
+            width: 2px;
+            height: 30%;
+            top: 50%;
+            left: 20%;
+        }
+        .circuit-line:nth-child(3) {
+            width: 60%;
+            height: 2px;
+            top: 30%;
+            left: 30%;
+        }
+        .circuit-line:nth-child(4) {
+            width: 3px;
+            height: 35%;
+            top: 40%;
+            left: 80%;
+        }
+        .circuit-line:nth-child(5) {
+            width: 40%;
+            height: 3px;
+            top: 85%;
+            left: 10%;
+        }
+        .circuit-line:nth-child(6) {
+            width: 2px;
+            height: 20%;
+            top: 10%;
+            left: 60%;
+        }
+        .circuit-line:nth-child(7) {
+            width: 50%;
+            height: 2px;
+            top: 60%;
+            left: 40%;
+        }
+        .glitch {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .glitch span {
+            position: absolute;
+            background: rgba(255, 42, 109, 0.5);
+            width: 100%;
+            height: 5px;
+            animation: glitchEffect 4s infinite;
+            opacity: 0;
+        }
+        .glitch span:nth-child(1) {
+            top: 30%;
+            animation-delay: 0s;
+        }
+        .glitch span:nth-child(2) {
+            top: 50%;
+            animation-delay: 1s;
+        }
+        .glitch span:nth-child(3) {
+            top: 70%;
+            animation-delay: 2s;
+        }
+        @keyframes glitchEffect {
+            0% {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            0.5%, 1.5% {
+                opacity: 0.5;
+                transform: translateX(0);
+            }
+            2% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        .digital-clock-container { 
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+        .digital-clock {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: var(--neon-green);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            border: 1px solid rgba(5, 255, 161, 0.3);
+            text-shadow: 0 0 5px var(--neon-green);
+            letter-spacing: 2px;
+            backdrop-filter: blur(5px);
+        }
+       footer {
+            margin-top: 6rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            position: relative;
+            z-index: 5;
+            padding: 2rem 0;
+            width: 100%;
+        }
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        footer a {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        footer a:hover {
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            .nebula, .orbit {
+                display: none;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .digital-clock-container { 
+                position: relative;
+                top: auto;
+                right: auto;
+                flex-direction: column;
+                margin: 1rem auto;
+                display: flex;
+            }
+        }
+
+        .language-switch {
+            position: relative;
+            display: inline-block;
+            width: 70px; 
+            height: 34px;
+        }
+        .language-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            border: 1px solid var(--neon-blue);
+            transition: .4s;
+            border-radius: 34px;
+            backdrop-filter: blur(5px);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 3px;
+            background-color: var(--neon-blue);
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        .slider:after { 
+            position: absolute;
+            content: '中';
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-blue);
+            font-size: 14px;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            border-color: var(--neon-green);
+        }
+        input:checked + .slider:before {
+            transform: translateX(36px);
+            background-color: var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+        input:checked + .slider:after {
+             content: 'EN';
+             left: 10px;
+             right: auto;
+             color: var(--neon-green);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="stars-container" id="stars-container"></div>
+    <div class="noise"></div>
+    <div class="code-lines"></div>
+    <div class="circuit-lines">
+        <div class="circuit-line"></div> <div class="circuit-line"></div> <div class="circuit-line"></div> <div class="circuit-line"></div> <div class="circuit-line"></div> <div class="circuit-line"></div> <div class="circuit-line"></div>
+    </div>
+    <div class="nebula" style="width: 600px; height: 600px; top: -100px; left: -100px; background: var(--nebula-color1);"></div>
+    <div class="nebula" style="width: 500px; height: 500px; bottom: -100px; right: -100px; background: var(--nebula-color2); animation-delay: -15s;"></div>
+    <div class="nebula" style="width: 400px; height: 400px; top: 50%; right: -150px; background: var(--nebula-color3); animation-delay: -7s;"></div>
+    <div class="orbit" style="width: 800px; height: 800px; top: 50%; left: 10%; transform: translate(-50%, -50%);">
+        <div class="planet" style="width: 20px; height: 20px; background: var(--neon-blue); top: 0%; left: 50%; --glow-color: var(--neon-blue);"></div>
+    </div>
+    <div class="orbit" style="width: 400px; height: 400px; top: 20%; right: 10%; transform: translate(50%, -50%); animation-duration: 40s;">
+        <div class="planet" style="width: 15px; height: 15px; background: var(--neon-pink); bottom: 0%; left: 50%; --glow-color: var(--neon-pink);"></div>
+    </div>
+    <div class="glitch"><span></span> <span></span> <span></span></div>
+
+    <div class="container">
+        <div class="digital-clock-container">
+            <div class="digital-clock" id="clock">00:00:00</div>
+            <label class="language-switch">
+                <input type="checkbox" id="language-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <header>
+            <h1>Free AI</h1>
+            <p class="subtitle" data-translate-key="subtitle">探索未来 · 释放创造力</p>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-icon">💬</span>
+                    <h2 data-translate-key="card1_title">AI智能对话</h2>
+                    <p data-translate-key="card1_desc">强大的AI聊天助手，可以回答问题、提供创意建议、编写文本，甚至帮你解决复杂问题。完全免费，无限制使用。</p>
+                    <a href="https://freeai.aihub.ren/chat" class="btn" data-translate-key="card1_btn">开始对话</a>
+                </div>
+                <div class="star-dust" id="dust-1"></div>
+            </div>
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-icon">🎨</span>
+                    <h2 data-translate-key="card2_title">AI图像生成</h2>
+                    <p data-translate-key="card2_desc">将你的想法转化为视觉艺术。只需输入文本描述，AI将为你创造令人惊叹的图像。支持多种风格和高分辨率导出。</p>
+                    <a href="https://freeai.aihub.ren/draw" class="btn" data-translate-key="card2_btn">生成图像</a>
+                </div>
+                <div class="star-dust" id="dust-2"></div>
+            </div>
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-icon">🔊</span>
+                    <h2 data-translate-key="card3_title">AI语音合成</h2>
+                    <p data-translate-key="card3_desc">将文本转换为逼真的语音。支持多种语言和声音风格，适用于创作内容、教育材料或个人使用。</p>
+                    <a href="https://freeai.aihub.ren/tts" class="btn" data-translate-key="card3_btn">转换语音</a>
+                </div>
+                <div class="star-dust" id="dust-3"></div>
+            </div>
+        </div>
+        <footer>
+            <p data-translate-key="footer_text">© 2025 <a href="https://github.com/Azad-sl/FreeAI" target="_blank" style="text-decoration: none; color: inherit;"><i class="fab fa-github" style="color: var(--neon-blue);"></i>   Free AI</a> | 基于 Pollinations.AI | <a href="https://other.azad.asia" target="_blank" style="text-decoration: none; color: inherit;">Azad的实验室</a></p>
+        </footer>
+    </div>
+    <script>
+        const translations = {
+            'zh-CN': {
+                title: 'FreeAI - 基于 Pollinations.AI',
+                subtitle: '探索未来 · 释放创造力',
+                card1_title: 'AI智能对话',
+                card1_desc: '强大的AI聊天助手，可以回答问题、提供创意建议、编写文本，甚至帮你解决复杂问题。完全免费，无限制使用。',
+                card1_btn: '开始对话',
+                card2_title: 'AI图像生成',
+                card2_desc: '将你的想法转化为视觉艺术。只需输入文本描述，AI将为你创造令人惊叹的图像。支持多种风格和高分辨率导出。',
+                card2_btn: '生成图像',
+                card3_title: 'AI语音合成',
+                card3_desc: '将文本转换为逼真的语音。支持多种语言和声音风格，适用于创作内容、教育材料或个人使用。',
+                card3_btn: '转换语音',
+                footer_text: '© 2025 <a href="https://github.com/Azad-sl/FreeAI" target="_blank" style="text-decoration: none; color: inherit;"><i class="fab fa-github" style="color: var(--neon-blue);"></i>   Free AI</a> | 基于 Pollinations.AI | <a href="https://other.azad.asia" target="_blank" style="text-decoration: none; color: inherit;">Azad的实验室</a>'
+            },
+            'en': {
+                title: 'FreeAI - Powered by Pollinations.AI',
+                subtitle: 'Explore The Future · Unleash Creativity',
+                card1_title: 'Intelligent AI Chat',
+                card1_desc: 'A powerful AI chat assistant that answers questions, provides creative suggestions, writes text, and even helps solve complex problems. Completely free, unlimited use.',
+                card1_btn: 'Start Chat',
+                card2_title: 'AI Image Generation',
+                card2_desc: 'Turn your ideas into visual art. Just enter a text description, and the AI will create stunning images for you. Supports various styles and high-resolution export.',
+                card2_btn: 'Generate Image',
+                card3_title: 'AI Voice Synthesis',
+                card3_desc: 'Convert text into realistic speech. Supports multiple languages and voice styles, suitable for content creation, educational materials, or personal use.',
+                card3_btn: 'Convert Voice',
+                footer_text: '© 2025 <a href="https://github.com/Azad-sl/FreeAI" target="_blank" style="text-decoration: none; color: inherit;"><i class="fab fa-github" style="color: var(--neon-blue);"></i>   Free AI</a> | Powered by Pollinations.AI | <a href="https://other.azad.asia" target="_blank" style="text-decoration: none; color: inherit;">Azad\'s Lab</a>'
+            }
+        };
+
+        function switchLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.title = translations[lang]['title'];
+            
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.dataset.translateKey;
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+            localStorage.setItem('userLanguage', lang);
+        }
+        
+        function createStars() {
+            const starsContainer = document.getElementById('stars-container');
+            const starCount = window.innerWidth < 768 ? 100 : 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 2 + 1;
+                const opacity = Math.random() * 0.7 + 0.3;
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 5;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.setProperty('--opacity', opacity);
+                star.style.setProperty('--duration', `${duration}s`);
+                star.style.setProperty('--delay', `${delay}s`);
+                starsContainer.appendChild(star);
+            }
+            
+            for (let i = 0; i < 5; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.classList.add('shooting-star');
+                const y = Math.random() * 70;
+                const rotate = Math.random() * 20 - 10;
+                const duration = Math.random() * 10 + 15;
+                const delay = Math.random() * 15;
+                shootingStar.style.top = `${y}%`;
+                shootingStar.style.right = `0`;
+                shootingStar.style.transform = `rotate(${rotate}deg)`;
+                shootingStar.style.setProperty('--duration', `${duration}s`);
+                shootingStar.style.setProperty('--delay', `${delay}s`);
+                starsContainer.appendChild(shootingStar);
+            }
+        }
+        
+        function createStarDust(containerId, color) {
+            const container = document.getElementById(containerId);
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('dust-particle');
+                const x = Math.random() * 100;
+                const delay = Math.random() * 3;
+                const size = Math.random() * 2 + 1;
+                const opacity = Math.random() * 0.7 + 0.3;
+                particle.style.left = `${x}%`;
+                particle.style.bottom = `-5px`;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.opacity = opacity;
+                particle.style.animationDelay = `${delay}s`;
+                if (color) {
+                    particle.style.background = color;
+                    particle.style.boxShadow = `0 0 3px ${color}`;
+                }
+                container.appendChild(particle);
+            }
+        }
+        
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        function addCircuitEffects() {
+            const lines = document.querySelectorAll('.circuit-line');
+            lines.forEach(line => {
+                const delay = Math.random() * 10;
+                const duration = 3 + Math.random() * 7;
+                line.style.animationDelay = `${delay}s`;
+                line.style.animationDuration = `${duration}s`;
+            });
+        }
+        
+        function addMouseEffect() {
+            document.addEventListener('mousemove', (e) => {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const cardCenterX = rect.left + rect.width / 2;
+                    const cardCenterY = rect.top + rect.height / 2;
+                    const distanceX = (e.clientX - cardCenterX) / 30;
+                    const distanceY = (e.clientY - cardCenterY) / 30;
+                    const tiltX = Math.max(Math.min(distanceY, 5), -5);
+                    const tiltY = Math.max(Math.min(-distanceX, 5), -5);
+                    if (Math.abs(distanceX) < 100 && Math.abs(distanceY) < 100) {
+                        card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-5px)`;
+                    } else {
+                        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+                    }
+                });
+                const planets = document.querySelectorAll('.planet');
+                planets.forEach(planet => {
+                    const moveX = (mouseX - 0.5) * 10;
+                    const moveY = (mouseY - 0.5) * 10;
+                    planet.style.marginLeft = `${moveX}px`;
+                    planet.style.marginTop = `${moveY}px`;
+                });
+                document.body.style.backgroundImage = `
+                    radial-gradient(circle at ${mouseX * 100}% ${mouseY * 100}%, rgba(1, 200, 238, 0.2) 0%, transparent 50%),
+                    radial-gradient(circle at ${85 - mouseX * 30}% ${30 + mouseY * 40}%, rgba(174, 95, 248, 0.1) 0%, transparent 40%),
+                    radial-gradient(circle at ${15 + mouseX * 30}% ${70 - mouseY * 40}%, rgba(255, 42, 109, 0.1) 0%, transparent 40%)
+                `;
+            });
+        }
+        
+        function randomGlitch() {
+            const glitchElements = document.querySelectorAll('.glitch span');
+            const randomIndex = Math.floor(Math.random() * glitchElements.length);
+            const randomElement = glitchElements[randomIndex];
+            randomElement.style.opacity = '0.5';
+            randomElement.style.transform = 'translateX(0)';
+            setTimeout(() => {
+                randomElement.style.opacity = '0';
+                randomElement.style.transform = 'translateX(100%)';
+            }, 100);
+            setTimeout(randomGlitch, 3000 + Math.random() * 5000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            createStarDust('dust-1', '#01c8ee');
+            createStarDust('dust-2', '#ff2a6d');
+            createStarDust('dust-3', '#ae5ff8');
+            addCircuitEffects();
+            addMouseEffect();
+            setInterval(updateClock, 1000);
+            updateClock();
+            setTimeout(randomGlitch, 2000);
+
+            const languageToggle = document.getElementById('language-toggle');
+            
+            const savedLang = localStorage.getItem('userLanguage') || 'zh-CN';
+            
+            switchLanguage(savedLang);
+            if (savedLang === 'en') {
+                languageToggle.checked = true;
+            }
+
+            languageToggle.addEventListener('change', () => {
+                if (languageToggle.checked) {
+                    switchLanguage('en');
+                } else {
+                    switchLanguage('zh-CN');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
